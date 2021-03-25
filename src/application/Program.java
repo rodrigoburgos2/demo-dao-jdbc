@@ -42,13 +42,20 @@ public class Program {
 		testar = false;
 		if (testar) {
 			System.out.println("\n=== Test 5: seller UPDATE ===");
-			Seller upSeller = sellerDao.findById(3);
-			upSeller.setName("Rodrigo Burgos");
-			upSeller.setEmail("rodrigoburgos2@gmail.com");
-			upSeller.setBaseSalary(5000.0);
-			sellerDao.update(upSeller);
+			seller = sellerDao.findById(3);
+			seller.setName("Rodrigo Burgos");
+			seller.setEmail("rodrigoburgos2@gmail.com");
+			seller.setBaseSalary(5000.0);
+			sellerDao.update(seller);
 			System.out.println("Update Completo!");
 		}
+		testar = false;
+		if (testar) {
+			System.out.println("\n=== Test 6: seller DELETE ===");
+			sellerDao.deleteById(8);
+			System.out.println("Vendedor Removido!");
+		}
+				
 	}
 
 }
