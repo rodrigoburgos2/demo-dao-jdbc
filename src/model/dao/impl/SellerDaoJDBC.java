@@ -15,10 +15,10 @@ import model.dao.SellerDao;
 import model.entities.Department;
 import model.entities.Seller;
 
-public class SellerDaoJDBC implements SellerDao{
-	
+public class SellerDaoJDBC implements SellerDao {
+
 	private Connection conn;
-	
+
 	public SellerDaoJDBC(Connection conn) {
 		this.conn = conn;
 	}
@@ -26,19 +26,19 @@ public class SellerDaoJDBC implements SellerDao{
 	@Override
 	public void insert(Seller obj) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void update(Seller obj) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void deleteById(Integer id) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -47,21 +47,19 @@ public class SellerDaoJDBC implements SellerDao{
 		ResultSet rs = null;
 		try {
 			st = conn.prepareStatement(
-					"SELECT seller.*,department.Name as DepName "
-					+ "FROM seller INNER JOIN department "
-					+ "ON seller.DepartmentId = department.Id "
-					+ "WHERE seller.Id = ? ");
+					"SELECT seller.*,department.Name as DepName " + "FROM seller INNER JOIN department "
+							+ "ON seller.DepartmentId = department.Id " + "WHERE seller.Id = ? ");
 			st.setInt(1, id);
 			rs = st.executeQuery();
-			if(rs.next()) {
-				Department dep = instanciateDepartment(rs);				
+			if (rs.next()) {
+				Department dep = instanciateDepartment(rs);
 				Seller seller = instanciateSeller(rs, dep);
-				return seller;				
+				return seller;
 			}
 			return null;
-		}catch(SQLException e) {
-			throw new DbException(e.getMessage());			
-		}finally {
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
 			DB.closeStatement(st);
 			DB.closeResultSet(rs);
 		}
@@ -87,8 +85,48 @@ public class SellerDaoJDBC implements SellerDao{
 
 	@Override
 	public List<Seller> findAll() {
-		// TODO Auto-generated method stub
-		return null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.prepareStatement(
+					"SELECT seller.*,department.Name as DepName " 
+					+ "FROM seller INNER JOIN department "
+					+ "ON seller.DepartmentId = department.Id "					 
+					+ "ORDER BY Name ");
+			
+			rs = st.executeQuery();
+
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>();
+
+//			rs.first();
+//			Department dep = instanciateDepartment(rs);
+//			rs.beforeFirst();
+
+			while (rs.next()) {
+				/*
+				 * Se o departamento existir o map.get vai pegar ele, ai o If vai dar falso e
+				 * vou reaproveitar o departamento que já existe. Se o departamento não existir
+				 * o map.get vai retornar nulo para variavel dep, o if vai dar true vai
+				 * instanciar e salvar o departamento no map. 
+				 */
+				Department dep = map.get(rs.getInt("DepartmentId"));
+
+				if (dep == null) {
+					dep = instanciateDepartment(rs);
+					map.put(rs.getInt("DepartmentId"), dep);
+				}
+
+				Seller seller = instanciateSeller(rs, dep);
+				list.add(seller);
+			}
+			return list;
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+		}
 	}
 
 	@Override
@@ -97,47 +135,44 @@ public class SellerDaoJDBC implements SellerDao{
 		ResultSet rs = null;
 		try {
 			st = conn.prepareStatement(
-					"SELECT seller.*,department.Name as DepName "
-					+"FROM seller INNER JOIN department "
-					+"ON seller.DepartmentId = department.Id "
-					+"WHERE DepartmentId = ? "
-					+"ORDER BY Name ");
+					"SELECT seller.*,department.Name as DepName " + "FROM seller INNER JOIN department "
+							+ "ON seller.DepartmentId = department.Id " + "WHERE DepartmentId = ? " + "ORDER BY Name ");
 			st.setInt(1, department.getId());
 			rs = st.executeQuery();
-			
+
 			List<Seller> list = new ArrayList<>();
 			Map<Integer, Department> map = new HashMap<>();
-												
+
 //			rs.first();
 //			Department dep = instanciateDepartment(rs);
 //			rs.beforeFirst();
-			
-			while(rs.next()) {
-				/*Se o departamento existir o map.get vai pegar ele, ai 
-				 * o If vai dar falso e vou reaproveitar o departamento
-				 * que já existe. Se o departamento não existir o map.get
-				 * vai retornar nulo para variavel dep, o if vai dar true
-				 * vai instanciar e salvar o departamento no map. 
-				 * ou simplesmente recebe o dep fora do while...
-				*/ 
-				 Department dep = map.get(rs.getInt("DepartmentId"));
-				
-				 if(dep == null) {
+
+			while (rs.next()) {
+				/*
+				 * Se o departamento existir o map.get vai pegar ele, ai o If vai dar falso e
+				 * vou reaproveitar o departamento que já existe. Se o departamento não existir
+				 * o map.get vai retornar nulo para variavel dep, o if vai dar true vai
+				 * instanciar e salvar o departamento no map. ou simplesmente recebe o dep fora
+				 * do while...
+				 */
+				Department dep = map.get(rs.getInt("DepartmentId"));
+
+				if (dep == null) {
 					dep = instanciateDepartment(rs);
 					map.put(rs.getInt("DepartmentId"), dep);
 				}
-				
+
 				Seller seller = instanciateSeller(rs, dep);
-				list.add(seller);				
+				list.add(seller);
 			}
 			return list;
-		}catch(SQLException e) {
-			throw new DbException(e.getMessage());			
-		}finally {
+		} catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		} finally {
 			DB.closeStatement(st);
 			DB.closeResultSet(rs);
-		}		
-		
+		}
+
 	}
 
 }
